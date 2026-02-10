@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RentlQ - Apartmani Analytics",
-  description: "Dashboard za analitiku i upravljanje apartmanima",
+  title: "RentlQ - Apartments Analytics",
+  description: "Dashboard for analytics and apartment management",
 };
 
 export default function RootLayout({
