@@ -73,6 +73,12 @@ export default function DashboardLayout({
                   Apartments
                 </Link>
                 <Link
+                  href="/upload"
+                  className="text-gray-700 hover:text-gray-900"
+                >
+                  Upload
+                </Link>
+                <Link
                   href="/settings"
                   className="text-gray-700 hover:text-gray-900"
                 >

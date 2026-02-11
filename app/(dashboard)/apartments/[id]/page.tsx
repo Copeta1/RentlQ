@@ -116,7 +116,7 @@ export default function ApartmentDetailsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <p>Loading...</p>
       </div>
     );
@@ -124,7 +124,7 @@ export default function ApartmentDetailsPage() {
 
   if (!apartment) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <p>Apartment not found</p>
       </div>
     );
