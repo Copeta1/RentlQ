@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   databases,
   DATABASE_ID,
@@ -52,13 +52,29 @@ export default function ReservationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const filterReservations = useCallback(() => {
+    let filtered = [...reservations];
+
+    if (selectedApartment !== "all") {
+      filtered = filtered.filter((r) => r.apartmentId === selectedApartment);
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter((r) =>
+        r.guestName.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    setFilteredReservations(filtered);
+  }, [reservations, selectedApartment, searchQuery]);
+
   useEffect(() => {
     fetchData();
   }, []);
 
   useEffect(() => {
     filterReservations();
-  }, [selectedApartment, searchQuery, reservations]);
+  }, [filterReservations]);
 
   const fetchData = async () => {
     try {
@@ -81,22 +97,6 @@ export default function ReservationsPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const filterReservations = () => {
-    let filtered = [...reservations];
-
-    if (selectedApartment !== "all") {
-      filtered = filtered.filter((r) => r.apartmentId === selectedApartment);
-    }
-
-    if (searchQuery) {
-      filtered = filtered.filter((r) =>
-        r.guestName.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    }
-
-    setFilteredReservations(filtered);
   };
 
   const getApartmentName = (apartmentId: string) => {
