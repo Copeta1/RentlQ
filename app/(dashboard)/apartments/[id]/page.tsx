@@ -6,6 +6,7 @@ import {
   databases,
   DATABASE_ID,
   APARTMENTS_COLLECTION_ID,
+  RESERVATIONS_COLLECTION_ID,
 } from "@/lib/appwrite";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
-import type { Models } from "appwrite";
+import { Query, type Models } from "appwrite";
 
 interface Apartment extends Models.Document {
   name: string;
@@ -99,11 +100,34 @@ export default function ApartmentDetailsPage() {
     if (!confirm("Are you sure you want to delete this apartment?")) return;
 
     try {
+      const reservationsResponse = await databases.listDocuments(
+        DATABASE_ID,
+        RESERVATIONS_COLLECTION_ID,
+        [Query.equal("apartmentId", apartmentId)],
+      );
+
+      const reservationCount = reservationsResponse.total;
+
+      const confirmed = confirm(
+        `Are you sure you want to delete this apartment?\n\nThis will also delete ${reservationCount} reservation(s) associated with it.\n\nThis action cannot be undone.`,
+      );
+
+      if (!confirmed) return;
+
+      for (const reservation of reservationsResponse.documents) {
+        await databases.deleteDocument(
+          DATABASE_ID,
+          RESERVATIONS_COLLECTION_ID,
+          reservation.$id,
+        );
+      }
+
       await databases.deleteDocument(
         DATABASE_ID,
         APARTMENTS_COLLECTION_ID,
         apartmentId,
       );
+
       router.push("/apartments");
     } catch (err) {
       if (err instanceof Error) {
