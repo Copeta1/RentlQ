@@ -77,6 +77,15 @@ export default function RegisterPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="absolute top-4 left-4">
+        <Link
+          href="/landing"
+          className="text-primary hover:underline flex items-center gap-2"
+        >
+          ← Back to Home
+        </Link>
+      </div>
+
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Registration</CardTitle>

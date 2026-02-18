@@ -23,6 +23,8 @@ export default function Home() {
         await account.get();
         router.push("/dashboard");
       } catch (error) {
+        router.push("/landing");
+      } finally {
         setLoading(false);
       }
     };
