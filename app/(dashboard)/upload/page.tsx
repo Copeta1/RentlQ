@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Upload, FileText, CheckCircle2 } from "lucide-react";
 import Papa from "papaparse";
-import type { Models } from "appwrite";
+import { Query, type Models } from "appwrite";
 
 interface Apartment extends Models.Document {
   name: string;
@@ -61,9 +61,12 @@ export default function UploadPage() {
 
   const fetchApartments = async () => {
     try {
+      const user = await account.get();
+
       const response = await databases.listDocuments(
         DATABASE_ID,
         APARTMENTS_COLLECTION_ID,
+        [Query.equal("userId", user.$id)],
       );
       setApartments(response.documents as unknown as Apartment[]);
     } catch (error) {

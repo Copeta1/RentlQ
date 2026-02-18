@@ -6,6 +6,7 @@ import {
   DATABASE_ID,
   RESERVATIONS_COLLECTION_ID,
   APARTMENTS_COLLECTION_ID,
+  account,
 } from "@/lib/appwrite";
 import {
   Card,
@@ -23,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Models } from "appwrite";
+import { Query, type Models } from "appwrite";
 import { format } from "date-fns";
 
 interface Reservation extends Models.Document {
@@ -78,14 +79,18 @@ export default function ReservationsPage() {
 
   const fetchData = async () => {
     try {
+      const user = await account.get();
+
       const reservationsResponse = await databases.listDocuments(
         DATABASE_ID,
         RESERVATIONS_COLLECTION_ID,
+        [Query.equal("userId", user.$id)],
       );
 
       const apartmentsResponse = await databases.listDocuments(
         DATABASE_ID,
         APARTMENTS_COLLECTION_ID,
+        [Query.equal("userId", user.$id)],
       );
 
       setReservations(

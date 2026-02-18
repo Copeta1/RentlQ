@@ -6,6 +6,7 @@ import {
   DATABASE_ID,
   APARTMENTS_COLLECTION_ID,
   RESERVATIONS_COLLECTION_ID,
+  account,
 } from "@/lib/appwrite";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Euro, Percent, Home, CalendarCheck } from "lucide-react";
@@ -26,7 +27,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import type { Models } from "appwrite";
+import { Query, type Models } from "appwrite";
 
 interface Reservation extends Models.Document {
   checkIn: string;
@@ -54,14 +55,18 @@ export default function DashboardPage() {
 
   const fetchAnalytics = async () => {
     try {
+      const user = await account.get();
+
       const apartmentsResponse = await databases.listDocuments(
         DATABASE_ID,
         APARTMENTS_COLLECTION_ID,
+        [Query.equal("userId", user.$id)],
       );
 
       const reservationsResponse = await databases.listDocuments(
         DATABASE_ID,
         RESERVATIONS_COLLECTION_ID,
+        [Query.equal("userId", user.$id)],
       );
 
       const reservations =

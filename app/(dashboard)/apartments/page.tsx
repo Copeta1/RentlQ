@@ -15,8 +15,9 @@ import {
   databases,
   DATABASE_ID,
   APARTMENTS_COLLECTION_ID,
+  account,
 } from "@/lib/appwrite";
-import { Models } from "appwrite";
+import { Models, Query } from "appwrite";
 
 interface Apartment extends Models.Document {
   name: string;
@@ -31,9 +32,12 @@ export default function ApartmentsPage() {
 
   const fetchApartments = async () => {
     try {
+      const user = await account.get();
+
       const response = await databases.listDocuments(
         DATABASE_ID,
         APARTMENTS_COLLECTION_ID,
+        [Query.equal("userId", user.$id)],
       );
       setApartments(response.documents as unknown as Apartment[]);
     } catch (error) {
