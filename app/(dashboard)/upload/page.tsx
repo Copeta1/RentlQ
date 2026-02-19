@@ -7,6 +7,7 @@ import {
   DATABASE_ID,
   RESERVATIONS_COLLECTION_ID,
   APARTMENTS_COLLECTION_ID,
+  PROPERTIES_COLLECTION_ID,
   ID,
 } from "@/lib/appwrite";
 import { account } from "@/lib/appwrite";
@@ -28,13 +29,18 @@ import {
 } from "@/components/ui/select";
 import { Upload, FileText, CheckCircle2 } from "lucide-react";
 import Papa from "papaparse";
-import { Query, type Models } from "appwrite";
+import type { Models } from "appwrite";
+import { Query } from "appwrite";
 
-interface Apartment extends Models.Document {
+interface Property extends Models.Document {
   name: string;
   location: string;
+}
+
+interface Unit extends Models.Document {
+  name: string;
+  propertyId: string;
   platform: string;
-  userId: string;
 }
 
 interface ParsedReservation {
@@ -47,8 +53,10 @@ interface ParsedReservation {
 
 export default function UploadPage() {
   const router = useRouter();
-  const [apartments, setApartments] = useState<Apartment[]>([]);
-  const [selectedApartment, setSelectedApartment] = useState("");
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
+  const [selectedProperty, setSelectedProperty] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<ParsedReservation[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -56,21 +64,49 @@ export default function UploadPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchApartments();
+    fetchProperties();
   }, []);
 
-  const fetchApartments = async () => {
+  useEffect(() => {
+    if (selectedProperty) {
+      fetchUnits(selectedProperty);
+      setSelectedUnit("");
+    } else {
+      setUnits([]);
+      setSelectedUnit("");
+    }
+  }, [selectedProperty]);
+
+  const fetchProperties = async () => {
+    try {
+      const user = await account.get();
+
+      const response = await databases.listDocuments(
+        DATABASE_ID,
+        PROPERTIES_COLLECTION_ID,
+        [Query.equal("userId", user.$id)],
+      );
+      setProperties(response.documents as unknown as Property[]);
+    } catch (error) {
+      console.error("Failed to fetch properties:", error);
+    }
+  };
+
+  const fetchUnits = async (propertyId: string) => {
     try {
       const user = await account.get();
 
       const response = await databases.listDocuments(
         DATABASE_ID,
         APARTMENTS_COLLECTION_ID,
-        [Query.equal("userId", user.$id)],
+        [
+          Query.equal("userId", user.$id),
+          Query.equal("propertyId", propertyId),
+        ],
       );
-      setApartments(response.documents as unknown as Apartment[]);
+      setUnits(response.documents as unknown as Unit[]);
     } catch (error) {
-      console.error("Failed to fetch apartments:", error);
+      console.error("Failed to fetch units:", error);
     }
   };
 
@@ -107,8 +143,13 @@ export default function UploadPage() {
   };
 
   const handleUpload = async () => {
-    if (!selectedApartment) {
-      setError("Please select an apartment");
+    if (!selectedProperty) {
+      setError("Please select a property");
+      return;
+    }
+
+    if (!selectedUnit) {
+      setError("Please select a unit");
       return;
     }
 
@@ -123,14 +164,52 @@ export default function UploadPage() {
     try {
       const user = await account.get();
 
-      for (const reservation of parsedData) {
+      const unit = units.find((u) => u.$id === selectedUnit);
+
+      if (!unit) {
+        setError("Unit not found");
+        setUploading(false);
+        return;
+      }
+
+      let reservationsToUpload = parsedData;
+
+      if (
+        unit.platform &&
+        unit.platform !== "both" &&
+        unit.platform !== "other"
+      ) {
+        reservationsToUpload = parsedData.filter((r) =>
+          r.platform.toLowerCase().includes(unit.platform.toLowerCase()),
+        );
+
+        if (reservationsToUpload.length === 0) {
+          setError(
+            `No ${unit.platform} reservations found in CSV. ` +
+              `This unit is configured for ${unit.platform} only.`,
+          );
+          setUploading(false);
+          return;
+        }
+
+        if (reservationsToUpload.length < parsedData.length) {
+          const skipped = parsedData.length - reservationsToUpload.length;
+          alert(
+            `Note: ${skipped} reservation(s) skipped because they don't match ` +
+              `the unit platform (${unit.platform}).`,
+          );
+        }
+      }
+
+      // Upload each reservation
+      for (const reservation of reservationsToUpload) {
         await databases.createDocument(
           DATABASE_ID,
           RESERVATIONS_COLLECTION_ID,
           ID.unique(),
           {
             userId: user.$id,
-            apartmentId: selectedApartment,
+            apartmentId: selectedUnit,
             guestName: reservation.guestName,
             checkIn: new Date(reservation.checkIn).toISOString(),
             checkOut: new Date(reservation.checkOut).toISOString(),
@@ -182,81 +261,115 @@ export default function UploadPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Step 1: Select Apartment</CardTitle>
+          <CardTitle>Step 1: Select Property</CardTitle>
           <CardDescription>
-            Choose which apartment these reservations belong to
+            Choose which property these reservations belong to
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="apartment">Apartment</Label>
+            <Label htmlFor="property">Property</Label>
             <Select
-              value={selectedApartment}
-              onValueChange={setSelectedApartment}
+              value={selectedProperty}
+              onValueChange={setSelectedProperty}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select an apartment" />
+                <SelectValue placeholder="Select a property" />
               </SelectTrigger>
               <SelectContent>
-                {apartments.map((apt) => (
-                  <SelectItem key={apt.$id} value={apt.$id}>
-                    {apt.name} - {apt.location}
+                {properties.map((property) => (
+                  <SelectItem key={property.$id} value={property.$id}>
+                    {property.name} - {property.location}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {apartments.length === 0 && (
+            {properties.length === 0 && (
               <p className="text-sm text-muted-foreground">
-                No apartments found. Please add an apartment first.
+                No properties found. Please add a property first.
               </p>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/*Upload CSV*/}
-      <Card>
-        <CardHeader>
-          <CardTitle>Step 2: Upload CSV File</CardTitle>
-          <CardDescription>
-            Upload your CSV file from Booking.com or Airbnb
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-              <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-                className="hidden"
-                id="csv-upload"
-              />
-              <label
-                htmlFor="csv-upload"
-                className="cursor-pointer text-sm text-gray-600 hover:text-gray-900"
-              >
-                <span className="text-primary font-medium">
-                  Click to upload
-                </span>{" "}
-                or drag and drop
-              </label>
-              <p className="text-xs text-gray-500 mt-2">CSV files only</p>
+      {selectedProperty && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Step 2: Select Unit</CardTitle>
+            <CardDescription>
+              Choose which unit (room/apartment) these reservations are for
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="unit">Unit</Label>
+              <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {units.map((unit) => (
+                    <SelectItem key={unit.$id} value={unit.$id}>
+                      {unit.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {units.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  No units found. Please add units to this property first.
+                </p>
+              )}
             </div>
+          </CardContent>
+        </Card>
+      )}
 
-            {file && (
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                <FileText className="h-5 w-5 text-gray-500" />
-                <span className="text-sm font-medium">{file.name}</span>
-                <span className="text-xs text-muted-foreground ml-auto">
-                  {parsedData.length} reservations found
-                </span>
+      {selectedUnit && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Step 3: Upload CSV File</CardTitle>
+            <CardDescription>
+              Upload your CSV file from Booking.com or Airbnb
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="csv-upload"
+                />
+                <label
+                  htmlFor="csv-upload"
+                  className="cursor-pointer text-sm text-gray-600 hover:text-gray-900"
+                >
+                  <span className="text-primary font-medium">
+                    Click to upload
+                  </span>{" "}
+                  or drag and drop
+                </label>
+                <p className="text-xs text-gray-500 mt-2">CSV files only</p>
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+
+              {file && (
+                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <FileText className="h-5 w-5 text-gray-500" />
+                  <span className="text-sm font-medium">{file.name}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    {parsedData.length} reservations found
+                  </span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {parsedData.length > 0 && (
         <Card>
@@ -301,24 +414,26 @@ export default function UploadPage() {
         </div>
       )}
 
-      <div className="flex gap-4">
-        <Button
-          variant="outline"
-          onClick={() => router.push("/dashboard")}
-          className="flex-1"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleUpload}
-          disabled={!selectedApartment || parsedData.length === 0 || uploading}
-          className="flex-1"
-        >
-          {uploading
-            ? "Uploading..."
-            : `Upload ${parsedData.length} Reservations`}
-        </Button>
-      </div>
+      {parsedData.length > 0 && (
+        <div className="flex gap-4">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/dashboard")}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpload}
+            disabled={!selectedProperty || !selectedUnit || uploading}
+            className="flex-1"
+          >
+            {uploading
+              ? "Uploading..."
+              : `Upload ${parsedData.length} Reservations`}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

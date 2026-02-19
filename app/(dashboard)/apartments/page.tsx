@@ -63,8 +63,10 @@ export default function ApartmentsPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Apartments</h1>
-          <p className="text-gray-600 mt-2">Manage your rental properties</p>
+          <h1 className="text-3xl font-bold">Units</h1>
+          <p className="text-gray-600 mt-2">
+            Manage all rental units across properties
+          </p>
         </div>
         <Link href="/apartments/new">
           <Button>
@@ -76,16 +78,16 @@ export default function ApartmentsPage() {
       {apartments.length === 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>No apartments available</CardTitle>
+            <CardTitle>No units yet</CardTitle>
             <CardDescription>
-              Get Started by adding your first apartment.
+              Get started by adding your first rental unit
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/apartments/new">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Your First Apartment
+                Add Unit
               </Button>
             </Link>
           </CardContent>

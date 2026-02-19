@@ -67,10 +67,10 @@ export default function DashboardLayout({
                   Dashboard
                 </Link>
                 <Link
-                  href="/apartments"
+                  href="/properties"
                   className="text-gray-700 hover:text-gray-900"
                 >
-                  Apartments
+                  Properties
                 </Link>
                 <Link
                   href="/upload"

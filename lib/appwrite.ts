@@ -13,5 +13,6 @@ export const storage = new Storage(client);
 export const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID!;
 export const APARTMENTS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_APARTMENTS_COLLECTION_ID!;
 export const RESERVATIONS_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_RESERVATIONS_COLLECTION_ID!;
+export const PROPERTIES_COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_PROPERTIES_COLLECTION_ID!;
 
 export { ID } from 'appwrite';
