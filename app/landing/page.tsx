@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -5,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { account } from "@/lib/appwrite";
 import {
   BarChart3,
   Calendar,
@@ -15,8 +18,27 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function LandingPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      await account.get();
+      setIsLoggedIn(true);
+    } catch (error) {
+      setIsLoggedIn(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const features = [
     {
       icon: Upload,
@@ -88,12 +110,22 @@ export default function LandingPage() {
               <h1 className="text-2xl font-bold text-blue-600">RentlQ</h1>
             </div>
             <div className="flex gap-4">
-              <Link href="/login">
-                <Button variant="ghost">Sign In</Button>
-              </Link>
-              <Link href="register">
-                <Button>Get Started Free</Button>
-              </Link>
+              {loading ? (
+                <div className="w-32 h-10" />
+              ) : isLoggedIn ? (
+                <Link href="/dashboard">
+                  <Button>Go to Dashboard</Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="ghost">Sign In</Button>
+                  </Link>
+                  <Link href="register">
+                    <Button>Get Started Free</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
