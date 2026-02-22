@@ -43,6 +43,7 @@ export default function NewUnitPage() {
   const [property, setProperty] = useState<Property | null>(null);
   const [name, setName] = useState("");
   const [platform, setPlatform] = useState("");
+  const [bookingIdentifier, setBookingIdentifier] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -81,6 +82,7 @@ export default function NewUnitPage() {
           name,
           location: property?.name || "",
           platform,
+          bookingIdentifier,
         },
       );
 
@@ -98,7 +100,7 @@ export default function NewUnitPage() {
 
   if (!property) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <p>Loading...</p>
       </div>
     );
@@ -138,6 +140,21 @@ export default function NewUnitPage() {
                 onChange={(e) => setName(e.target.value)}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bookingIdentifier">Booking.com Identifier</Label>
+              <Input
+                id="bookingIdentifier"
+                type="text"
+                placeholder="e.g., Deluxe Suite, Double Room"
+                value={bookingIdentifier}
+                onChange={(e) => setBookingIdentifier(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                How this unit appears in Booking.com CSV exports (Room/Unit
+                column)
+              </p>
             </div>
 
             <div className="space-y-2">

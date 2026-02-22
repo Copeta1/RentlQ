@@ -33,6 +33,7 @@ interface Unit extends Models.Document {
   platform: string;
   userId: string;
   propertyId: string;
+  bookingIdentifier?: string;
 }
 
 export default function PropertyUnitsPage() {

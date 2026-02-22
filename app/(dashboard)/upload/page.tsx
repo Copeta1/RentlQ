@@ -41,6 +41,7 @@ interface Unit extends Models.Document {
   name: string;
   propertyId: string;
   platform: string;
+  bookingIdentifier?: string;
 }
 
 interface ParsedReservation {

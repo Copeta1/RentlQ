@@ -33,6 +33,7 @@ interface Apartment extends Models.Document {
   location: string;
   platform: string;
   userId: string;
+  bookingIdentifier?: string;
 }
 
 export default function ApartmentDetailsPage() {
@@ -47,6 +48,7 @@ export default function ApartmentDetailsPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [bookingIdentifier, setBookingIdentifier] = useState("");
 
   useEffect(() => {
     fetchApartment();
@@ -64,6 +66,7 @@ export default function ApartmentDetailsPage() {
       setName(apt.name);
       setLocation(apt.location);
       setPlatform(apt.platform || "");
+      setBookingIdentifier(apt.bookingIdentifier || "");
     } catch (error) {
       console.error("Failed to fetch apartment:", error);
       setError("Failed to load apartment");
@@ -82,7 +85,7 @@ export default function ApartmentDetailsPage() {
         DATABASE_ID,
         APARTMENTS_COLLECTION_ID,
         apartmentId,
-        { name, location, platform },
+        { name, location, platform, bookingIdentifier },
       );
       router.push("/apartments");
     } catch (err) {
@@ -188,6 +191,20 @@ export default function ApartmentDetailsPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="bookingIdentifier">Booking.com Identifier</Label>
+              <Input
+                id="bookingIdentifier"
+                type="text"
+                placeholder="e.g., Deluxe Suite, Double Room"
+                value={bookingIdentifier}
+                onChange={(e) => setBookingIdentifier(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                How this unit appears in Booking.com CSV exports
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="location">Location *</Label>
               <Input
                 id="location"
@@ -219,7 +236,7 @@ export default function ApartmentDetailsPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/apartments")}
+                onClick={() => router.back()}
                 className="flex-1"
               >
                 Cancel
