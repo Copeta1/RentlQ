@@ -60,7 +60,7 @@ export default function DashboardPage() {
       const apartmentsResponse = await databases.listDocuments(
         DATABASE_ID,
         APARTMENTS_COLLECTION_ID,
-        [Query.equal("userId", user.$id)],
+        [Query.equal("userId", user.$id), Query.isNotNull("propertyId")],
       );
 
       const reservationsResponse = await databases.listDocuments(
@@ -269,19 +269,20 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle>Get Started</CardTitle>
             <CardDescription>
-              Start by adding your first apartment
+              Start by adding your first property
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Add your apartments and upload reservation data to see analytics.
+              Add a property (house/building), then add units
+              (rooms/apartments), and upload reservations.
             </p>
             <div className="flex gap-4">
               <Link
-                href="/apartments/new"
+                href="/properties/new"
                 className="text-primary hover:underline"
               >
-                Add Apartment →
+                Add Property →
               </Link>
               <Link href="/upload" className="text-primary hover:underline">
                 Upload Reservations →
