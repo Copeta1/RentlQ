@@ -126,7 +126,14 @@ export default function UploadPage() {
     Papa.parse<Record<string, string>>(file, {
       header: true,
       skipEmptyLines: true,
-      delimiter: ";", // Booking.com uses semicolon!
+      delimiter: ";",
+      beforeFirstChunk: (chunk) => {
+        const lines = chunk.split("\n");
+        if (lines[0].trim() === ";;;;;;;" || lines[0].trim().match(/^;+$/)) {
+          return lines.slice(1).join("\n");
+        }
+        return chunk;
+      },
       complete: (results) => {
         const mapped = results.data.map((row) => ({
           bookingNumber: row["Booking Number"] || row["booking_number"] || "",
