@@ -78,12 +78,19 @@ export default function DashboardLayout({
                 >
                   Upload
                 </Link>
+                {/* <Link
+                  href="/calendar"
+                  className="text-gray-700 hover:text-gray-900"
+                >
+                  Calendar
+                </Link> */}
                 <Link
                   href="/reservations"
                   className="text-gray-700 hover:text-gray-900"
                 >
                   Reservations
                 </Link>
+
                 <Link
                   href="/settings"
                   className="text-gray-700 hover:text-gray-900"
