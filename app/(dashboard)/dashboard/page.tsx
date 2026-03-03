@@ -9,7 +9,7 @@ import {
   account,
 } from "@/lib/appwrite";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { Euro, Percent, Home, CalendarCheck } from "lucide-react";
+import { Euro, Percent, Home } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,22 +17,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Query } from "appwrite";
+import type { Models } from "appwrite";
+import { format, parseISO, differenceInDays } from "date-fns";
 import Link from "next/link";
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
-import { Query, type Models } from "appwrite";
+import { RevenueChart } from "@/components/analytics/RevenueChart";
+import { PlatformComparison } from "@/components/analytics/PlatformComparison";
+import { OccupancyTrend } from "@/components/analytics/OccupancyTrend";
+import { TopPerformingUnits } from "@/components/analytics/TopPerformingUnits";
 
 interface Reservation extends Models.Document {
+  apartmentId: string;
   checkIn: string;
   checkOut: string;
   price: number;
+  platform: string;
 }
 
 interface MonthlyData {
@@ -41,12 +40,34 @@ interface MonthlyData {
   reservations: number;
 }
 
+interface PlatformData {
+  name: string;
+  revenue: number;
+  bookings: number;
+}
+
+interface MonthlyOccupancy {
+  month: string;
+  occupancy: number;
+}
+
+interface UnitPerformance {
+  unitName: string;
+  revenue: number;
+  bookings: number;
+  adr: number;
+}
+
 export default function DashboardPage() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalReservations, setTotalReservations] = useState(0);
   const [totalApartments, setTotalApartments] = useState(0);
   const [occupancyRate, setOccupancyRate] = useState(0);
+  const [totalADR, setTotalADR] = useState(0);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [platformData, setPlatformData] = useState<PlatformData[]>([]);
+  const [occupancyTrend, setOccupancyTrend] = useState<MonthlyOccupancy[]>([]);
+  const [unitPerformance, setUnitPerformance] = useState<UnitPerformance[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,15 +93,16 @@ export default function DashboardPage() {
       const reservations =
         reservationsResponse.documents as unknown as Reservation[];
       const apartmentCount = apartmentsResponse.total;
+      const units = apartmentsResponse.documents;
 
-      // Calculate total revenue
       const revenue = reservations.reduce((sum, r) => sum + r.price, 0);
-
-      // Calculate occupancy rate
       const occupancy = calculateOccupancyRate(reservations, apartmentCount);
-
-      // Calculate monthly revenue
       const monthly = calculateMonthlyRevenue(reservations);
+
+      calculatePlatformComparison(reservations);
+      calculateOccupancyTrend(reservations, apartmentCount);
+      calculateUnitPerformance(reservations, units);
+      calculateADR(reservations);
 
       setTotalRevenue(revenue);
       setTotalReservations(reservations.length);
@@ -104,7 +126,6 @@ export default function DashboardPage() {
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth();
 
-    // Count nights booked this month
     let bookedNights = 0;
     reservations.forEach((r) => {
       const checkIn = new Date(r.checkIn);
@@ -149,7 +170,6 @@ export default function DashboardPage() {
       monthlyMap[monthKey].count += 1;
     });
 
-    // Convert to array and sort by date
     const monthlyArray = Object.entries(monthlyMap)
       .map(([month, data]) => ({
         month: formatMonth(month),
@@ -162,7 +182,6 @@ export default function DashboardPage() {
         return dateA.getTime() - dateB.getTime();
       });
 
-    // Get last 6 months
     return monthlyArray.slice(-6);
   };
 
@@ -173,6 +192,136 @@ export default function DashboardPage() {
       month: "short",
       year: "numeric",
     });
+  };
+
+  const calculatePlatformComparison = (reservations: Reservation[]) => {
+    const platformMap: {
+      [key: string]: { revenue: number; bookings: number };
+    } = {};
+
+    reservations.forEach((r) => {
+      const platform = r.platform || "Unknown";
+      if (!platformMap[platform]) {
+        platformMap[platform] = { revenue: 0, bookings: 0 };
+      }
+      platformMap[platform].revenue += r.price;
+      platformMap[platform].bookings += 1;
+    });
+
+    const data: PlatformData[] = Object.entries(platformMap).map(
+      ([name, stats]) => ({
+        name,
+        revenue: stats.revenue,
+        bookings: stats.bookings,
+      }),
+    );
+
+    setPlatformData(data);
+  };
+
+  const calculateOccupancyTrend = (
+    reservations: Reservation[],
+    unitCount: number,
+  ) => {
+    if (unitCount === 0) {
+      setOccupancyTrend([]);
+      return;
+    }
+
+    const monthlyMap: { [key: string]: number } = {};
+
+    reservations.forEach((r) => {
+      const checkIn = parseISO(r.checkIn);
+      const checkOut = parseISO(r.checkOut);
+      const nights = differenceInDays(checkOut, checkIn);
+
+      const monthKey = format(checkIn, "yyyy-MM");
+      monthlyMap[monthKey] = (monthlyMap[monthKey] || 0) + nights;
+    });
+
+    const trend: MonthlyOccupancy[] = Object.entries(monthlyMap)
+      .map(([month, bookedNights]) => {
+        const [year, monthNum] = month.split("-");
+        const daysInMonth = new Date(
+          parseInt(year),
+          parseInt(monthNum),
+          0,
+        ).getDate();
+        const totalAvailableNights = daysInMonth * unitCount;
+        const occupancy = (bookedNights / totalAvailableNights) * 100;
+
+        return {
+          month: format(new Date(month), "MMM yyyy"),
+          occupancy: Math.round(occupancy * 10) / 10,
+        };
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.month);
+        const dateB = new Date(b.month);
+        return dateA.getTime() - dateB.getTime();
+      })
+      .slice(-6);
+
+    setOccupancyTrend(trend);
+  };
+
+  const calculateUnitPerformance = (
+    reservations: Reservation[],
+    units: Models.Document[],
+  ) => {
+    const unitMap: {
+      [key: string]: { revenue: number; bookings: number; nights: number };
+    } = {};
+
+    reservations.forEach((r) => {
+      if (!unitMap[r.apartmentId]) {
+        unitMap[r.apartmentId] = { revenue: 0, bookings: 0, nights: 0 };
+      }
+
+      const checkIn = parseISO(r.checkIn);
+      const checkOut = parseISO(r.checkOut);
+      const nights = differenceInDays(checkOut, checkIn);
+
+      unitMap[r.apartmentId].revenue += r.price;
+      unitMap[r.apartmentId].bookings += 1;
+      unitMap[r.apartmentId].nights += nights;
+    });
+
+    const performance: UnitPerformance[] = Object.entries(unitMap)
+      .map(([unitId, stats]) => {
+        const unit = units.find((u) => u.$id === unitId) as
+          | { name: string }
+          | undefined;
+        const adr = stats.nights > 0 ? stats.revenue / stats.nights : 0;
+
+        return {
+          unitName: unit ? unit.name : "Unknown",
+          revenue: stats.revenue,
+          bookings: stats.bookings,
+          adr: Math.round(adr * 100) / 100,
+        };
+      })
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5);
+
+    setUnitPerformance(performance);
+  };
+
+  const calculateADR = (reservations: Reservation[]) => {
+    let totalRevenue = 0;
+    let totalNights = 0;
+
+    reservations.forEach((r) => {
+      const checkIn = parseISO(r.checkIn);
+      const checkOut = parseISO(r.checkOut);
+      const nights = differenceInDays(checkOut, checkIn);
+
+      totalRevenue += r.price;
+      totalNights += nights;
+    });
+
+    const adr = totalNights > 0 ? totalRevenue / totalNights : 0;
+    setTotalADR(Math.round(adr * 100) / 100);
   };
 
   if (loading) {
@@ -192,6 +341,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Revenue"
@@ -206,63 +356,29 @@ export default function DashboardPage() {
           icon={Percent}
         />
         <StatsCard
-          title="Total Apartments"
+          title="Total Units"
           value={totalApartments}
           description={
-            totalApartments === 0
-              ? "Add your first apartment"
-              : "Active properties"
+            totalApartments === 0 ? "Add your first unit" : "Active units"
           }
           icon={Home}
         />
         <StatsCard
-          title="Reservations"
-          value={totalReservations}
-          description="All time"
-          icon={CalendarCheck}
+          title="ADR"
+          value={`€${totalADR.toFixed(2)}`}
+          description="Avg. daily rate"
+          icon={Euro}
         />
       </div>
 
-      {monthlyData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue Overview</CardTitle>
-            <CardDescription>
-              Monthly revenue for the last 6 months
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month"
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `€${value}`}
-                />
-                <Tooltip
-                  formatter={(value: number | undefined) =>
-                    value !== undefined
-                      ? [`€${value.toFixed(2)}`, "Revenue"]
-                      : ["€0.00", "Revenue"]
-                  }
-                  labelStyle={{ color: "#000" }}
-                />
-                <Bar dataKey="revenue" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
+      <RevenueChart data={monthlyData} />
+
+      <div className="grid md:grid-cols-2 gap-8">
+        <PlatformComparison data={platformData} />
+        <OccupancyTrend data={occupancyTrend} />
+      </div>
+
+      <TopPerformingUnits data={unitPerformance} />
 
       {totalApartments === 0 && (
         <Card>

@@ -215,7 +215,7 @@ export default function CalendarPage() {
               return (
                 <div
                   key={index}
-                  className={`min-h-[120px] border rounded-lg p-2 ${
+                  className={`min-h-30 border rounded-lg p-2 ${
                     isToday ? "border-blue-500 bg-blue-50" : "border-gray-200"
                   } ${!day.isCurrentMonth ? "opacity-50" : ""}`}
                 >
