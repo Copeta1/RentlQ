@@ -218,9 +218,9 @@ export default function LandingPage() {
           <span className="text-blue-600">without the spreadsheet.</span>
         </h1>
         <p className="relative mx-auto mb-10 max-w-130 text-[1.1rem] leading-relaxed text-slate-600">
-          Centralize your Booking.com and Airbnb data. Track revenue,
-          occupancy, and all reservations — in one clean dashboard built for
-          property owners.
+          Centralize your Booking.com and Airbnb data. Track revenue, occupancy,
+          and all reservations — in one clean dashboard built for property
+          owners.
         </p>
         <div className="relative mb-4 flex flex-wrap justify-center gap-3">
           <Link
@@ -513,8 +513,8 @@ export default function LandingPage() {
           Ready to take control of your rentals?
         </h2>
         <p className="mx-auto mb-8 max-w-105 text-[1rem] text-blue-200">
-          Join property owners who track their revenue, occupancy, and
-          bookings in one place — for free.
+          Join property owners who track their revenue, occupancy, and bookings
+          in one place — for free.
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link
@@ -547,8 +547,8 @@ export default function LandingPage() {
                 </span>
               </Link>
               <p className="mt-3 max-w-60 text-[0.85rem] leading-relaxed text-slate-500">
-                Analytics dashboard for apartment rental owners. Centralize
-                your Booking.com and Airbnb data in one place.
+                Analytics dashboard for apartment rental owners. Centralize your
+                Booking.com and Airbnb data in one place.
               </p>
             </div>
             <div>
@@ -624,9 +624,6 @@ export default function LandingPage() {
           <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 pt-6 sm:flex-row">
             <p className="text-[0.8rem] text-slate-400">
               © 2026 RentlQ. All rights reserved.
-            </p>
-            <p className="text-[0.78rem] font-semibold text-blue-600">
-              Built in Zagreb 🇭🇷
             </p>
           </div>
         </div>
