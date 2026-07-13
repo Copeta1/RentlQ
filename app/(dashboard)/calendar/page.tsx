@@ -8,14 +8,6 @@ import {
   APARTMENTS_COLLECTION_ID,
   account,
 } from "@/lib/appwrite";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Query } from "appwrite";
 import type { Models } from "appwrite";
@@ -50,9 +42,17 @@ interface CalendarDay {
   isCurrentMonth: boolean;
 }
 
+const UNIT_COLORS = [
+  "bg-blue-50 text-blue-700 border-blue-200",
+  "bg-green-50 text-green-700 border-green-200",
+  "bg-purple-50 text-purple-700 border-purple-200",
+  "bg-amber-50 text-amber-700 border-amber-200",
+  "bg-rose-50 text-rose-700 border-rose-200",
+  "bg-indigo-50 text-indigo-700 border-indigo-200",
+];
+
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [reservations, setReservations] = useState<Reservation[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,9 +77,6 @@ export default function CalendarPage() {
         [Query.equal("userId", user.$id), Query.isNotNull("propertyId")],
       );
 
-      setReservations(
-        reservationsResponse.documents as unknown as Reservation[],
-      );
       setUnits(unitsResponse.documents as unknown as Unit[]);
 
       generateCalendar(
@@ -122,17 +119,8 @@ export default function CalendarPage() {
   };
 
   const getUnitColor = (apartmentId: string) => {
-    const colors = [
-      "bg-blue-100 text-blue-800 border-blue-300",
-      "bg-green-100 text-green-800 border-green-300",
-      "bg-purple-100 text-purple-800 border-purple-300",
-      "bg-orange-100 text-orange-800 border-orange-300",
-      "bg-pink-100 text-pink-800 border-pink-300",
-      "bg-indigo-100 text-indigo-800 border-indigo-300",
-    ];
-
     const index = units.findIndex((u) => u.$id === apartmentId);
-    return colors[index % colors.length];
+    return UNIT_COLORS[index % UNIT_COLORS.length];
   };
 
   const handlePreviousMonth = () => {
@@ -149,122 +137,134 @@ export default function CalendarPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p>Loading calendar...</p>
+      <div className="flex items-center justify-center min-h-100">
+        <p className="text-sm text-slate-500">Loading calendar...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Calendar</h1>
-          <p className="text-gray-600 mt-2">
-            View all reservations in calendar format
-          </p>
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-[1.3rem] font-extrabold tracking-tight text-slate-900">
+          Calendar
+        </h1>
+        <p className="mt-0.5 text-[0.83rem] text-slate-500">
+          View all reservations in calendar format
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="mb-5 flex items-center justify-between">
+          <button
+            onClick={handlePreviousMonth}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="text-center">
+            <div className="text-[0.95rem] font-bold text-slate-900">
+              {format(currentMonth, "MMMM yyyy")}
+            </div>
+            <button
+              onClick={handleToday}
+              className="mt-0.5 text-[0.75rem] font-medium text-blue-600 hover:underline"
+            >
+              Today
+            </button>
+          </div>
+
+          <button
+            onClick={handleNextMonth}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mb-2 grid grid-cols-7 gap-2">
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+            <div
+              key={day}
+              className="p-2 text-center text-[0.7rem] font-bold uppercase tracking-wide text-slate-400"
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-2">
+          {Array.from({
+            length: (startOfMonth(currentMonth).getDay() + 6) % 7,
+          }).map((_, i) => (
+            <div key={`empty-${i}`} className="min-h-30" />
+          ))}
+
+          {calendarDays.map((day, index) => {
+            const isToday = isSameDay(day.date, new Date());
+
+            return (
+              <div
+                key={index}
+                className={`min-h-30 rounded-lg border p-2 ${
+                  isToday
+                    ? "border-blue-300 bg-blue-50"
+                    : "border-slate-100"
+                } ${!day.isCurrentMonth ? "opacity-40" : ""}`}
+              >
+                <div className="mb-1 text-[0.78rem] font-semibold text-slate-700">
+                  {format(day.date, "d")}
+                </div>
+
+                <div className="space-y-1">
+                  {day.reservations.map((reservation) => (
+                    <div
+                      key={reservation.$id}
+                      className={`rounded border px-1.5 py-1 text-[0.68rem] ${getUnitColor(
+                        reservation.apartmentId,
+                      )}`}
+                      title={`${reservation.guestName} - ${getUnitName(
+                        reservation.apartmentId,
+                      )}`}
+                    >
+                      <div className="truncate font-semibold">
+                        {getUnitName(reservation.apartmentId)}
+                      </div>
+                      <div className="truncate">{reservation.guestName}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <Button variant="outline" size="sm" onClick={handlePreviousMonth}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-
-            <div className="text-center">
-              <CardTitle>{format(currentMonth, "MMMM yyyy")}</CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleToday}
-                className="mt-1"
-              >
-                Today
-              </Button>
+      {units.length > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="mb-3">
+            <div className="text-[0.9rem] font-bold text-slate-900">
+              Legend
             </div>
-
-            <Button variant="outline" size="sm" onClick={handleNextMonth}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            <div className="mt-0.5 text-[0.75rem] text-slate-400">
+              Units color coding
+            </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-7 gap-2 mb-2">
-            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-              <div
-                key={day}
-                className="text-center font-semibold text-sm text-gray-600 p-2"
-              >
-                {day}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            {Array.from({
-              length: (startOfMonth(currentMonth).getDay() + 6) % 7,
-            }).map((_, i) => (
-              <div key={`empty-${i}`} className="min-h-[120px]" />
-            ))}
-
-            {calendarDays.map((day, index) => {
-              const isToday = isSameDay(day.date, new Date());
-
-              return (
-                <div
-                  key={index}
-                  className={`min-h-30 border rounded-lg p-2 ${
-                    isToday ? "border-blue-500 bg-blue-50" : "border-gray-200"
-                  } ${!day.isCurrentMonth ? "opacity-50" : ""}`}
-                >
-                  <div className="text-sm font-medium mb-1">
-                    {format(day.date, "d")}
-                  </div>
-
-                  <div className="space-y-1">
-                    {day.reservations.map((reservation) => (
-                      <div
-                        key={reservation.$id}
-                        className={`text-xs p-1 rounded border ${getUnitColor(
-                          reservation.apartmentId,
-                        )}`}
-                        title={`${reservation.guestName} - ${getUnitName(
-                          reservation.apartmentId,
-                        )}`}
-                      >
-                        <div className="font-medium truncate">
-                          {getUnitName(reservation.apartmentId)}
-                        </div>
-                        <div className="truncate">{reservation.guestName}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Legend</CardTitle>
-          <CardDescription>Units color coding</CardDescription>
-        </CardHeader>
-        <CardContent>
           <div className="flex flex-wrap gap-4">
             {units.map((unit) => (
               <div key={unit.$id} className="flex items-center gap-2">
                 <div
-                  className={`w-4 h-4 rounded border ${getUnitColor(unit.$id)}`}
+                  className={`h-3.5 w-3.5 rounded border ${getUnitColor(unit.$id)}`}
                 />
-                <span className="text-sm">{unit.name}</span>
+                <span className="text-[0.8rem] text-slate-600">
+                  {unit.name}
+                </span>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>
   );
 }
