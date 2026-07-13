@@ -155,7 +155,7 @@ export default function PropertyDetailsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <p>Loading...</p>
+        <p className="text-sm text-slate-500">Loading...</p>
       </div>
     );
   }
@@ -163,17 +163,21 @@ export default function PropertyDetailsPage() {
   if (!property) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <p>Property not found</p>
+        <p className="text-sm text-slate-500">Property not found</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-5">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Edit Property</h1>
-          <p className="text-gray-600 mt-2">Update property details</p>
+          <h1 className="text-[1.3rem] font-extrabold tracking-tight text-slate-900">
+            Edit Property
+          </h1>
+          <p className="mt-0.5 text-[0.83rem] text-slate-500">
+            Update property details
+          </p>
         </div>
         <Button variant="destructive" size="sm" onClick={handleDelete}>
           <Trash2 className="mr-2 h-4 w-4" />
@@ -181,7 +185,7 @@ export default function PropertyDetailsPage() {
         </Button>
       </div>
 
-      <Card>
+      <Card className="border-slate-200">
         <CardHeader>
           <CardTitle>Property Details</CardTitle>
           <CardDescription>

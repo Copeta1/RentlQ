@@ -62,15 +62,17 @@ export default function NewPropertyPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-5">
       <div>
-        <h1 className="text-3xl font-bold">Add New Property</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-[1.3rem] font-extrabold tracking-tight text-slate-900">
+          Add New Property
+        </h1>
+        <p className="mt-0.5 text-[0.83rem] text-slate-500">
           Add a house or building with multiple units
         </p>
       </div>
 
-      <Card>
+      <Card className="border-slate-200">
         <CardHeader>
           <CardTitle>Property Details</CardTitle>
           <CardDescription>

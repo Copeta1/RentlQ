@@ -9,13 +9,6 @@ import {
   account,
 } from "@/lib/appwrite";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -128,161 +121,189 @@ export default function ReservationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <p>Loading reservations...</p>
+        <p className="text-sm text-slate-500">Loading reservations...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-3xl font-bold">Reservations</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-[1.3rem] font-extrabold tracking-tight text-slate-900">
+          Reservations
+        </h1>
+        <p className="mt-0.5 text-[0.83rem] text-slate-500">
           View and manage all your apartment reservations
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Reservations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {filteredReservations.length}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="mb-2 text-[0.75rem] font-semibold uppercase tracking-wide text-slate-500">
+            Total Reservations
+          </div>
+          <div className="text-[1.65rem] font-extrabold leading-none tracking-tight text-slate-900">
+            {filteredReservations.length}
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">€{totalRevenue.toFixed(2)}</div>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="mb-2 text-[0.75rem] font-semibold uppercase tracking-wide text-slate-500">
+            Total Revenue
+          </div>
+          <div className="text-[1.65rem] font-extrabold leading-none tracking-tight text-slate-900">
+            €{totalRevenue.toFixed(2)}
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Upcoming</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{upcomingReservations}</div>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="mb-2 text-[0.75rem] font-semibold uppercase tracking-wide text-slate-500">
+            Upcoming
+          </div>
+          <div className="text-[1.65rem] font-extrabold leading-none tracking-tight text-slate-900">
+            {upcomingReservations}
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Apartment</Label>
-              <Select
-                value={selectedApartment}
-                onValueChange={setSelectedApartment}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All apartments" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Apartments</SelectItem>
-                  {apartments.map((apt) => (
-                    <SelectItem key={apt.$id} value={apt.$id}>
-                      {apt.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Search Guest</Label>
-              <Input
-                placeholder="Search by guest name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="mb-4 text-[0.9rem] font-bold text-slate-900">
+          Filters
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Apartment</Label>
+            <Select
+              value={selectedApartment}
+              onValueChange={setSelectedApartment}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="All apartments" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Apartments</SelectItem>
+                {apartments.map((apt) => (
+                  <SelectItem key={apt.$id} value={apt.$id}>
+                    {apt.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Reservations</CardTitle>
-          <CardDescription>
+          <div className="space-y-2">
+            <Label>Search Guest</Label>
+            <Input
+              placeholder="Search by guest name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="border-b border-slate-100 px-5 py-4">
+          <div className="text-[0.9rem] font-bold text-slate-900">
+            All Reservations
+          </div>
+          <div className="mt-0.5 text-[0.75rem] text-slate-400">
             {filteredReservations.length} reservation(s) found
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {filteredReservations.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              No reservations found. Upload a CSV to get started.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="border-b">
-                  <tr className="text-left">
-                    <th className="pb-3 font-medium">Guest Name</th>
-                    <th className="pb-3 font-medium">Apartment</th>
-                    <th className="pb-3 font-medium">Check-in</th>
-                    <th className="pb-3 font-medium">Check-out</th>
-                    <th className="pb-3 font-medium">Nights</th>
-                    <th className="pb-3 font-medium">Price</th>
-                    <th className="pb-3 font-medium">Platform</th>
-                    <th className="pb-3 font-medium">Status</th>
+          </div>
+        </div>
+        {filteredReservations.length === 0 ? (
+          <p className="px-5 py-10 text-center text-sm text-slate-400">
+            No reservations found. Upload a CSV to get started.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-slate-50">
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Guest Name
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Apartment
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Check-in
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Check-out
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Nights
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Price
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Platform
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredReservations.map((reservation) => (
+                  <tr
+                    key={reservation.$id}
+                    className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
+                  >
+                    <td className="px-4 py-3 text-[0.82rem] font-semibold text-slate-800">
+                      {reservation.guestName}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem] text-slate-700">
+                      {getApartmentName(reservation.apartmentId)}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem] text-slate-700">
+                      {format(new Date(reservation.checkIn), "dd.MM.yyyy")}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem] text-slate-700">
+                      {format(new Date(reservation.checkOut), "dd.MM.yyyy")}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem] text-slate-700">
+                      {calculateNights(
+                        reservation.checkIn,
+                        reservation.checkOut,
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem] font-bold text-green-600">
+                      €{reservation.price}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem]">
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[0.7rem] font-semibold ${
+                          reservation.platform
+                            ?.toLowerCase()
+                            .includes("airbnb")
+                            ? "bg-rose-50 text-rose-600"
+                            : "bg-blue-50 text-blue-700"
+                        }`}
+                      >
+                        {reservation.platform}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-[0.7rem] font-semibold ${
+                          reservation.status === "confirmed"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-red-50 text-red-600"
+                        }`}
+                      >
+                        {reservation.status}
+                      </span>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredReservations.map((reservation) => (
-                    <tr
-                      key={reservation.$id}
-                      className="border-b hover:bg-gray-50"
-                    >
-                      <td className="py-3">{reservation.guestName}</td>
-                      <td className="py-3">
-                        {getApartmentName(reservation.apartmentId)}
-                      </td>
-                      <td className="py-3">
-                        {format(new Date(reservation.checkIn), "dd.MM.yyyy")}
-                      </td>
-                      <td className="py-3">
-                        {format(new Date(reservation.checkOut), "dd.MM.yyyy")}
-                      </td>
-                      <td className="py-3">
-                        {calculateNights(
-                          reservation.checkIn,
-                          reservation.checkOut,
-                        )}
-                      </td>
-                      <td className="py-3 font-medium">€{reservation.price}</td>
-                      <td className="py-3">{reservation.platform}</td>
-                      <td className="py-3">
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            reservation.status === "confirmed"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {reservation.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

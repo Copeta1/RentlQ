@@ -141,22 +141,28 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <p>Loading settings...</p>
+        <p className="text-sm text-slate-500">Loading settings...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-5">
       <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-[1.3rem] font-extrabold tracking-tight text-slate-900">
+          Settings
+        </h1>
+        <p className="mt-0.5 text-[0.83rem] text-slate-500">
           Manage your account settings and preferences
         </p>
-        {user && <p>Account ID: {user.$id}</p>}
+        {user && (
+          <p className="mt-1 text-[0.72rem] text-slate-400">
+            Account ID: {user.$id}
+          </p>
+        )}
       </div>
 
-      <Card>
+      <Card className="border-slate-200">
         <CardHeader>
           <CardTitle>Profile</CardTitle>
           <CardDescription>Update your profile information</CardDescription>
@@ -201,7 +207,7 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="border-slate-200">
         <CardHeader>
           <CardTitle>Change Password</CardTitle>
           <CardDescription>Update your account password</CardDescription>

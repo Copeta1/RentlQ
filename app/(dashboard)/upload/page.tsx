@@ -12,13 +12,6 @@ import {
 } from "@/lib/appwrite";
 import { account } from "@/lib/appwrite";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -257,8 +250,10 @@ export default function UploadPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 space-y-4">
         <CheckCircle2 className="h-16 w-16 text-green-500" />
-        <h2 className="text-2xl font-bold">Upload Successful!</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl font-bold text-slate-900">
+          Upload Successful!
+        </h2>
+        <p className="text-sm text-slate-500">
           Uploaded {matchedCount} reservations
         </p>
         {unmatchedCount > 0 && (
@@ -266,208 +261,228 @@ export default function UploadPage() {
             {unmatchedCount} reservations were skipped (no matching unit found)
           </p>
         )}
-        <p className="text-sm text-muted-foreground">
-          Redirecting to dashboard...
-        </p>
+        <p className="text-sm text-slate-400">Redirecting to dashboard...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-5">
       <div>
-        <h1 className="text-3xl font-bold">Upload Reservations</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-[1.3rem] font-extrabold tracking-tight text-slate-900">
+          Upload Reservations
+        </h1>
+        <p className="mt-0.5 text-[0.83rem] text-slate-500">
           Import reservations from Booking.com CSV export
         </p>
       </div>
 
       {/* Step 1: Select Property */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Step 1: Select Property</CardTitle>
-          <CardDescription>
-            Choose which property these reservations belong to
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="property">Property</Label>
-            <Select
-              value={selectedProperty}
-              onValueChange={setSelectedProperty}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a property" />
-              </SelectTrigger>
-              <SelectContent>
-                {properties.map((property) => (
-                  <SelectItem key={property.$id} value={property.$id}>
-                    {property.name} - {property.location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {properties.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No properties found. Please add a property first.
-              </p>
-            )}
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="mb-4">
+          <div className="text-[0.9rem] font-bold text-slate-900">
+            Step 1: Select Property
           </div>
-        </CardContent>
-      </Card>
+          <div className="mt-0.5 text-[0.75rem] text-slate-400">
+            Choose which property these reservations belong to
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="property">Property</Label>
+          <Select value={selectedProperty} onValueChange={setSelectedProperty}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a property" />
+            </SelectTrigger>
+            <SelectContent>
+              {properties.map((property) => (
+                <SelectItem key={property.$id} value={property.$id}>
+                  {property.name} - {property.location}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {properties.length === 0 && (
+            <p className="text-sm text-slate-400">
+              No properties found. Please add a property first.
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Step 2: Upload CSV */}
       {selectedProperty && units.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Step 2: Upload Booking.com CSV</CardTitle>
-            <CardDescription>
-              Upload your CSV file exported from Booking.com
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="csv-upload"
-                />
-                <label
-                  htmlFor="csv-upload"
-                  className="cursor-pointer text-sm text-gray-600 hover:text-gray-900"
-                >
-                  <span className="text-primary font-medium">
-                    Click to upload
-                  </span>{" "}
-                  or drag and drop
-                </label>
-                <p className="text-xs text-gray-500 mt-2">
-                  CSV files only (semicolon-separated)
-                </p>
-              </div>
-
-              {file && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                    <FileText className="h-5 w-5 text-gray-500" />
-                    <span className="text-sm font-medium">{file.name}</span>
-                  </div>
-
-                  {/* Match Statistics */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
-                        <div>
-                          <p className="text-sm font-medium text-green-900">
-                            Matched
-                          </p>
-                          <p className="text-2xl font-bold text-green-600">
-                            {matchedCount}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-5 w-5 text-orange-600" />
-                        <div>
-                          <p className="text-sm font-medium text-orange-900">
-                            Unmatched
-                          </p>
-                          <p className="text-2xl font-bold text-orange-600">
-                            {unmatchedCount}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {unmatchedCount > 0 && (
-                    <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                      <p className="text-sm text-orange-800">
-                        <strong>Note:</strong> {unmatchedCount} reservation(s)
-                        could not be matched with any unit. Make sure the
-                        Booking.com Identifier in your units matches the
-                        Room/Unit column in the CSV.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="mb-4">
+            <div className="text-[0.9rem] font-bold text-slate-900">
+              Step 2: Upload Booking.com CSV
             </div>
-          </CardContent>
-        </Card>
+            <div className="mt-0.5 text-[0.75rem] text-slate-400">
+              Upload your CSV file exported from Booking.com
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="rounded-xl border-2 border-dashed border-slate-200 p-8 text-center">
+              <Upload className="mx-auto mb-4 h-12 w-12 text-slate-300" />
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+                className="hidden"
+                id="csv-upload"
+              />
+              <label
+                htmlFor="csv-upload"
+                className="cursor-pointer text-sm text-slate-500 hover:text-slate-900"
+              >
+                <span className="font-semibold text-blue-600">
+                  Click to upload
+                </span>{" "}
+                or drag and drop
+              </label>
+              <p className="mt-2 text-xs text-slate-400">
+                CSV files only (semicolon-separated)
+              </p>
+            </div>
+
+            {file && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 rounded-lg bg-slate-50 p-3">
+                  <FileText className="h-5 w-5 text-slate-400" />
+                  <span className="text-sm font-medium text-slate-800">
+                    {file.name}
+                  </span>
+                </div>
+
+                {/* Match Statistics */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <div>
+                        <p className="text-sm font-medium text-green-900">
+                          Matched
+                        </p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {matchedCount}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-orange-600" />
+                      <div>
+                        <p className="text-sm font-medium text-orange-900">
+                          Unmatched
+                        </p>
+                        <p className="text-2xl font-bold text-orange-600">
+                          {unmatchedCount}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {unmatchedCount > 0 && (
+                  <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
+                    <p className="text-sm text-orange-800">
+                      <strong>Note:</strong> {unmatchedCount} reservation(s)
+                      could not be matched with any unit. Make sure the
+                      Booking.com Identifier in your units matches the
+                      Room/Unit column in the CSV.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {selectedProperty && units.length === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>No Units Found</CardTitle>
-            <CardDescription>
-              Please add units to this property before uploading reservations.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="text-[0.9rem] font-bold text-slate-900">
+            No Units Found
+          </div>
+          <p className="mt-0.5 text-[0.75rem] text-slate-400">
+            Please add units to this property before uploading reservations.
+          </p>
+        </div>
       )}
 
       {/* Preview */}
       {parsedData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Preview</CardTitle>
-            <CardDescription>
-              Showing first 5 reservations with match status
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="border-b">
-                  <tr className="text-left">
-                    <th className="pb-2">Guest</th>
-                    <th className="pb-2">Room/Unit</th>
-                    <th className="pb-2">Check-in</th>
-                    <th className="pb-2">Price</th>
-                    <th className="pb-2">Match</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {parsedData.slice(0, 5).map((reservation, index) => (
-                    <tr key={index} className="border-b">
-                      <td className="py-2">{reservation.guestName}</td>
-                      <td className="py-2">{reservation.roomUnit}</td>
-                      <td className="py-2">{reservation.checkIn}</td>
-                      <td className="py-2">€{reservation.price}</td>
-                      <td className="py-2">
-                        {reservation.matchedUnit ? (
-                          <span className="text-green-600 font-medium">
-                            ✓ Matched
-                          </span>
-                        ) : (
-                          <span className="text-orange-600 font-medium">
-                            ✗ Not matched
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <div className="text-[0.9rem] font-bold text-slate-900">
+              Preview
             </div>
-          </CardContent>
-        </Card>
+            <div className="mt-0.5 text-[0.75rem] text-slate-400">
+              Showing first 5 reservations with match status
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-slate-50">
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Guest
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Room/Unit
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Check-in
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Price
+                  </th>
+                  <th className="border-b border-slate-100 px-4 py-2.5 text-left text-[0.7rem] font-bold uppercase tracking-wide text-slate-400">
+                    Match
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {parsedData.slice(0, 5).map((reservation, index) => (
+                  <tr
+                    key={index}
+                    className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50"
+                  >
+                    <td className="px-4 py-3 text-[0.82rem] font-semibold text-slate-800">
+                      {reservation.guestName}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem] text-slate-700">
+                      {reservation.roomUnit}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem] text-slate-700">
+                      {reservation.checkIn}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem] text-slate-700">
+                      €{reservation.price}
+                    </td>
+                    <td className="px-4 py-3 text-[0.82rem]">
+                      {reservation.matchedUnit ? (
+                        <span className="font-medium text-green-600">
+                          ✓ Matched
+                        </span>
+                      ) : (
+                        <span className="font-medium text-orange-600">
+                          ✗ Not matched
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {/* Error */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}

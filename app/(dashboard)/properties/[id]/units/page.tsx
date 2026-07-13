@@ -10,13 +10,6 @@ import {
   account,
 } from "@/lib/appwrite";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Plus, DoorOpen, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { Models } from "appwrite";
@@ -78,7 +71,7 @@ export default function PropertyUnitsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <p>Loading units...</p>
+        <p className="text-sm text-slate-500">Loading units...</p>
       </div>
     );
   }
@@ -86,17 +79,17 @@ export default function PropertyUnitsPage() {
   if (!property) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <p>Property not found</p>
+        <p className="text-sm text-slate-500">Property not found</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <div>
         <Link
           href="/properties"
-          className="text-primary hover:underline flex items-center gap-2 mb-4"
+          className="mb-4 flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Properties
@@ -104,9 +97,11 @@ export default function PropertyUnitsPage() {
 
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">{property.name}</h1>
-            <p className="text-gray-600 mt-2">
-              {property.location} • {units.length} unit(s)
+            <h1 className="text-[1.3rem] font-extrabold tracking-tight text-slate-900">
+              {property.name}
+            </h1>
+            <p className="mt-0.5 text-[0.83rem] text-slate-500">
+              {property.location} · {units.length} unit(s)
             </p>
           </div>
           <Link href={`/properties/${propertyId}/units/new`}>
@@ -119,45 +114,42 @@ export default function PropertyUnitsPage() {
       </div>
 
       {units.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No units yet</CardTitle>
-            <CardDescription>
-              Add rooms or apartments within this property
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href={`/properties/${propertyId}/units/new`}>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add First Unit
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
+          <div className="mb-1 text-[0.95rem] font-bold text-slate-900">
+            No units yet
+          </div>
+          <p className="mb-4 text-sm text-slate-500">
+            Add rooms or apartments within this property
+          </p>
+          <Link href={`/properties/${propertyId}/units/new`}>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add First Unit
+            </Button>
+          </Link>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {units.map((unit) => (
-            <Card key={unit.$id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <DoorOpen className="h-8 w-8 text-blue-600" />
-                </div>
-                <CardTitle className="mt-4">{unit.name}</CardTitle>
-                <CardDescription>
-                  {unit.platform || "No platform"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  <Link href={`/apartments/${unit.$id}`} className="flex-1">
-                    <Button variant="outline" className="w-full" size="sm">
-                      Edit Unit
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+            <div
+              key={unit.$id}
+              className="rounded-xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md"
+            >
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+                <DoorOpen className="h-5 w-5 text-blue-600" />
+              </div>
+              <div className="mb-0.5 text-[0.95rem] font-bold text-slate-900">
+                {unit.name}
+              </div>
+              <div className="mb-4 text-[0.8rem] text-slate-500">
+                {unit.platform || "No platform"}
+              </div>
+              <Link href={`/apartments/${unit.$id}`}>
+                <Button variant="outline" className="w-full" size="sm">
+                  Edit Unit
+                </Button>
+              </Link>
+            </div>
           ))}
         </div>
       )}

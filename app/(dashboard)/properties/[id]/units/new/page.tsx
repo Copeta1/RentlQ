@@ -101,29 +101,31 @@ export default function NewUnitPage() {
   if (!property) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <p>Loading...</p>
+        <p className="text-sm text-slate-500">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8">
+    <div className="max-w-2xl mx-auto space-y-5">
       <div>
         <Link
           href={`/properties/${propertyId}/units`}
-          className="text-primary hover:underline flex items-center gap-2 mb-4"
+          className="mb-4 flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Units
         </Link>
 
-        <h1 className="text-3xl font-bold">Add New Unit</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-[1.3rem] font-extrabold tracking-tight text-slate-900">
+          Add New Unit
+        </h1>
+        <p className="mt-0.5 text-[0.83rem] text-slate-500">
           Add a room or apartment to {property.name}
         </p>
       </div>
 
-      <Card>
+      <Card className="border-slate-200">
         <CardHeader>
           <CardTitle>Unit Details</CardTitle>
           <CardDescription>Enter information about this unit</CardDescription>
